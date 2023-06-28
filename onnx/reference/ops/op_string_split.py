@@ -22,13 +22,11 @@ class StringSplit(OpRun):
         if delimiter is None:
             delimiter = " "
 
-        if (
-            x.dtype.kind not in _acceptable_str_dtypes
-        ):
-            raise TypeError(
-                f"Inputs must be string tensors, received dtype {x.dtype}"
-            )
+        if x.dtype.kind not in _acceptable_str_dtypes:
+            raise TypeError(f"Inputs must be string tensors, received dtype {x.dtype}")
         # we want to return a (potentially nested) list of string arrays, preserving input shape
-        split_result = np.char.split(x.astype(np.str_), sep=delimiter, maxsplit=maxsplit)
+        split_result = np.char.split(
+            x.astype(np.str_), sep=delimiter, maxsplit=maxsplit
+        )
         split_result = _convert_to_nested_list(split_result)
         return (split_result,)
