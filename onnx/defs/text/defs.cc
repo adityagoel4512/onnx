@@ -5,6 +5,33 @@
 #include "onnx/defs/schema.h"
 
 namespace ONNX_NAMESPACE {
+static const char* StringConcat_doc =
+    R"DOC(StringConcat concatenates string tensors elementwise (with NumPy-style broadcasting support))DOC";
+ONNX_OPERATOR_SET_SCHEMA(
+    StringConcat,
+    20,
+    OpSchema()
+        .Input(
+            0,
+            "X",
+            "Tensor to prepend in concatenation",
+            "T",
+            OpSchema::Single,
+            true,
+            1,
+            OpSchema::NonDifferentiable)
+        .Input(1, "Y", "Tensor to append in concatenation", "T", OpSchema::Single, true, 1, OpSchema::NonDifferentiable)
+        .Output(0, "Z", "Concatenated string tensor", "T", OpSchema::Single, true, 1, OpSchema::NonDifferentiable)
+        .TypeConstraint("T", {"tensor(string)"}, "Inputs and outputs must be UTF-8 strings")
+        .SetDoc(StringConcat_doc)
+        .TypeAndShapeInferenceFunction([](InferenceContext& ctx) {
+          propagateElemTypeFromInputToOutput(ctx, 0, 0);
+          if (hasNInputShapes(ctx, 2))
+            bidirectionalBroadcastShapeInference(
+                ctx.getInputType(0)->tensor_type().shape(),
+                ctx.getInputType(1)->tensor_type().shape(),
+                *ctx.getOutputType(0)->mutable_tensor_type()->mutable_shape());
+        }));
 
 static const char* StringSplit_doc =
     R"DOC(StringSplit splits a string tensor's elements into substrings based on a delimiter attribute and a maxsplit attribute. The first output of this operator is a tensor of strings representing the substrings from splitting each input string on the delimiter substring. A integer tensor is also returned representing the number of substrings generated. This output tensor has one additional rank compared to the input to store these substrings, as examples below will illustrate.)DOC";
