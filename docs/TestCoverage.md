@@ -20717,13 +20717,23 @@ There are 2 test cases, listed as following:
 node = onnx.helper.make_node(
     "StringSplit",
     inputs=["x"],
-    outputs=["result"],
+    outputs=["substrings", "length"],
     delimiter=".",
+    maxsplit=None,
 )
 
 x = np.array(["abc.com", "def.net"]).astype(object)
-result = [np.array(["abc", "com"]).astype(object), np.array(["def", "net"]).astype(object)]
-expect(node, inputs=[x], outputs=[result], name="test_string_split_basic")
+
+substrings = np.array([["abc", "com"], ["def", "net"]]).astype(object)
+
+length = np.array([2, 2], dtype=np.int32)
+
+expect(
+    node,
+    inputs=[x],
+    outputs=[substrings, length],
+    name="test_string_split_basic",
+)
 ```
 
 </details>
@@ -20734,18 +20744,29 @@ expect(node, inputs=[x], outputs=[result], name="test_string_split_basic")
 node = onnx.helper.make_node(
     "StringSplit",
     inputs=["x"],
-    outputs=["result"],
+    outputs=["substrings", "length"],
     maxsplit=2,
 )
 
-x = np.array([["hello world", "def.net"], ["o n n x", "the quick brown fox"]]).astype(object)
-result = [
-    [np.array(["hello", "world"]).astype(object), np.array(["def.net"]).astype(object)],
-    [np.array(["o", "n", "n x"]).astype(object), np.array(["the", "quick", "brown fox"]).astype(object)]
-    ]
+x = np.array(
+    [["hello world", "def.net"], ["o n n x", "the quick brown fox"]]
+).astype(object)
 
-output_type_protos = [onnx.helper.make_sequence_type_proto(onnx.helper.make_sequence_type_proto(onnx.helper.make_tensor_type_proto(onnx.helper.np_dtype_to_tensor_dtype(np.dtype("object")), (None,))))]
-expect(node, inputs=[x], outputs=[result], name="test_string_split_maxsplit", output_type_protos=output_type_protos)
+substrings = np.array(
+    [
+        [["hello", "world", ""], ["def.net", "", ""]],
+        [["o", "n", "n x"], ["the", "quick", "brown fox"]],
+    ]
+).astype(object)
+
+length = np.array([[2, 1], [3, 3]], np.int32)
+
+expect(
+    node,
+    inputs=[x],
+    outputs=[substrings, length],
+    name="test_string_split_maxsplit",
+)
 ```
 
 </details>

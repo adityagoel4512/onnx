@@ -38,10 +38,8 @@ from onnx.helper import (
     make_empty_tensor_value_info,
     make_node,
     make_opsetid,
-    make_sequence_value_info,
     make_tensor,
     make_tensor_sequence_value_info,
-    make_tensor_type_proto,
     make_tensor_value_info,
 )
 from onnx.parser import parse_graph
@@ -7546,57 +7544,59 @@ class TestShapeInference(TestShapeInferenceHelper):
 
     @parameterized.expand(all_versions_for("StringSplit"))
     def test_string_split_basic(self, _, version) -> None:
-        output = make_tensor_sequence_value_info(
-            "y",
+        substrings = make_tensor_value_info(
+            "substrings",
             TensorProto.STRING,
-            (None,),
+            (2, None),
         )
+        length = make_tensor_value_info("length", TensorProto.INT32, (2,))
         graph = self._make_graph(
             [
                 ("x", TensorProto.STRING, (2,)),
             ],
-            [make_node("StringSplit", ["x"], ["y"])],
-            [output],
+            [make_node("StringSplit", ["x"], ["substrings", "length"])],
+            [substrings, length],
         )
         self._assert_inferred(
             graph,
-            [output],
+            [substrings, length],
             opset_imports=[helper.make_opsetid(ONNX_DOMAIN, version)],
         )
 
     @parameterized.expand(all_versions_for("StringSplit"))
-    def test_string_split_nested_sequence(self, _, version) -> None:
-        output = make_sequence_value_info(
-            "y", 3, make_tensor_type_proto(TensorProto.STRING, (None,))
+    def test_string_split_nested(self, _, version) -> None:
+        substrings = make_tensor_value_info(
+            "substrings", TensorProto.STRING, (2, 4, 3, None)
         )
+        length = make_tensor_value_info("length", TensorProto.INT32, (2, 4, 3))
         graph = self._make_graph(
             [
                 ("x", TensorProto.STRING, (2, 4, 3)),
             ],
-            [make_node("StringSplit", ["x"], ["y"], maxsplit=2)],
-            [output],
+            [make_node("StringSplit", ["x"], ["substrings", "length"], maxsplit=2)],
+            [substrings, length],
         )
         self._assert_inferred(
             graph,
-            [output],
+            [substrings, length],
             opset_imports=[helper.make_opsetid(ONNX_DOMAIN, version)],
         )
 
     @parameterized.expand(all_versions_for("StringSplit"))
     def test_string_split_zero_dimensional_input(self, _, version) -> None:
-        output = make_sequence_value_info(
-            "y", 1, make_tensor_type_proto(TensorProto.STRING, (None,))
-        )
+        substrings = make_tensor_value_info("substrings", TensorProto.STRING, (None,))
+        length = make_tensor_value_info("length", TensorProto.INT32, ())
+
         graph = self._make_graph(
             [
                 ("x", TensorProto.STRING, ()),
             ],
-            [make_node("StringSplit", ["x"], ["y"])],
-            [output],
+            [make_node("StringSplit", ["x"], ["substrings", "length"], maxsplit=2)],
+            [substrings, length],
         )
         self._assert_inferred(
             graph,
-            [output],
+            [substrings, length],
             opset_imports=[helper.make_opsetid(ONNX_DOMAIN, version)],
         )
 

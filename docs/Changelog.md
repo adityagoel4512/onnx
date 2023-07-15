@@ -23944,7 +23944,7 @@ This version of the operator has been available since version 20 of the default 
 
 ### <a name="StringSplit-20"></a>**StringSplit-20**</a>
 
-  StringSplit splits a string tensor based on a delimiter attribute and a maxsplit attribute. The output of this operator is a (potentially nested) Sequence of tensors of strings. The shape of the output nested Sequence is the same as the input tensor shape, and the string tensors contain the substrings split by the delimiter at the same position as in the input.
+  StringSplit splits a string tensor's elements into substrings based on a delimiter attribute and a maxsplit attribute. The first output of this operator is a tensor of strings representing the substrings from splitting each input string on the delimiter substring. A integer tensor is also returned representing the number of substrings generated. This output tensor has one additional rank compared to the input to store these substrings, as examples below will illustrate.
 
 #### Version
 
@@ -23956,30 +23956,34 @@ This version of the operator has been available since version 20 of the default 
 <dt><tt>delimiter</tt> : string</dt>
 <dd>Delimiter to split on. If left unset this defaults to a space character.</dd>
 <dt><tt>maxsplit</tt> : int</dt>
-<dd>Maximum number of splits. If left unset, it will make as many splits as many times the delimiter appears.</dd>
+<dd>Maximum number of splits (from left to right). If left unset, it will make as many splits as possible.</dd>
 </dl>
 
 #### Inputs
 
 <dl>
-<dt><tt>X</tt> (non-differentiable) : T</dt>
-<dd>String Tensor to split</dd>
+<dt><tt>X</tt> (non-differentiable) : T1</dt>
+<dd>Tensor of strings to split.</dd>
 </dl>
 
 #### Outputs
 
 <dl>
-<dt><tt>Y</tt> (non-differentiable) : S</dt>
-<dd>Sequence of split strings (with equal Sequence shape as the input tensor)</dd>
+<dt><tt>Y</tt> (non-differentiable) : T2</dt>
+<dd>Tensor of substrings representing the outcome of splitting the strings in the input on the delimiter. Note that to ensure the same number of elements are present in the final rank, this tensor will pad any necessary empty strings.</dd>
+<dt><tt>Z</tt> (non-differentiable) : T3</dt>
+<dd>The number of substrings generated for each input element.</dd>
 </dl>
 
 #### Type Constraints
 
 <dl>
-<dt><tt>T</tt> : tensor(string)</dt>
+<dt><tt>T1</tt> : tensor(string)</dt>
 <dd>The input must be a UTF-8 string tensor</dd>
-<dt><tt>S</tt> : seq(tensor(string)), seq(seq(tensor(string)))</dt>
-<dd>The output is a sequence of string tensors</dd>
+<dt><tt>T2</tt> : tensor(string)</dt>
+<dd>Tensor of substrings.</dd>
+<dt><tt>T3</tt> : tensor(int32)</dt>
+<dd>The number of substrings generated.</dd>
 </dl>
 
 # ai.onnx.preview.training
