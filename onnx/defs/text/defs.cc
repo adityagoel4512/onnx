@@ -164,5 +164,4 @@ ONNX_OPERATOR_SET_SCHEMA(
           }
           updateOutputShape(ctx, 0, output_shape);
         }));
-
 } // namespace ONNX_NAMESPACE

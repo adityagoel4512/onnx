@@ -3714,57 +3714,6 @@ class TestReferenceEvaluator(unittest.TestCase):
         self.assertEqual(got.shape, (11,) * dim)
         self.assertEqual(got.dtype, np.float32)
 
-    @parameterized.parameterized.expand(
-        [
-            (["1,2,3", "4,5,6"], ",", None, [["1", "2", "3"], ["4", "5", "6"]], [3, 3]),
-            (
-                ["1,", "4,6", ""],
-                ",",
-                None,
-                [["1", ""], ["4", "6"], ["", ""]],
-                [2, 2, 1],
-            ),
-            (
-                ["1", "4,6", "4,5,6"],
-                ",",
-                1,
-                [["1", ""], ["4", "6"], ["4", "5,6"]],
-                [1, 2, 2],
-            ),
-            (
-                [["1,", "4,6", "4,5,6"], ["1,", "4,6", "4,5,6"]],
-                ",",
-                None,
-                [
-                    [["1", "", ""], ["4", "6", ""], ["4", "5", "6"]],
-                    [["1", "", ""], ["4", "6", ""], ["4", "5", "6"]],
-                ],
-                [[2, 2, 3], [2, 2, 3]],
-            ),
-        ]
-    )
-    def test_string_split(
-        self, x, delimiter, maxsplit, expected_split, expected_num_splits
-    ):
-        X = make_tensor_value_info("X", TensorProto.STRING, (None))
-        Splits = make_tensor_value_info("Splits", TensorProto.STRING, (None))
-        MaxSplits = make_tensor_value_info("MaxSplits", TensorProto.INT64, (None))
-        node = make_node(
-            "StringSplit",
-            inputs=["X"],
-            outputs=["Splits", "MaxSplits"],
-            delimiter=delimiter,
-            maxsplit=maxsplit,
-        )
-        model = make_model(make_graph([node], "g", [X], [Splits, MaxSplits]))
-        ref = ReferenceEvaluator(model)
-        x = np.array(x)
-        result, num_splits, *_ = ref.run(None, {"X": x})
-        np.testing.assert_array_equal(result, np.array(expected_split, dtype=object))
-        np.testing.assert_array_equal(
-            num_splits, np.array(expected_num_splits, dtype=np.int32)
-        )
-
     def test_constant_of_shape(self):
         X = make_tensor_value_info("X", TensorProto.FLOAT, None)
         Y = make_tensor_value_info("Y", TensorProto.FLOAT, None)
@@ -3833,6 +3782,57 @@ class TestReferenceEvaluator(unittest.TestCase):
         np.testing.assert_array_equal(result, expected)
         self.assertEqual(result.dtype.kind, "O")
         self.assertEqual(result.shape, expected_shape)
+
+    @parameterized.parameterized.expand(
+        [
+            (["1,2,3", "4,5,6"], ",", None, [["1", "2", "3"], ["4", "5", "6"]], [3, 3]),
+            (
+                ["1,", "4,6", ""],
+                ",",
+                None,
+                [["1", ""], ["4", "6"], ["", ""]],
+                [2, 2, 1],
+            ),
+            (
+                ["1", "4,6", "4,5,6"],
+                ",",
+                1,
+                [["1", ""], ["4", "6"], ["4", "5,6"]],
+                [1, 2, 2],
+            ),
+            (
+                [["1,", "4,6", "4,5,6"], ["1,", "4,6", "4,5,6"]],
+                ",",
+                None,
+                [
+                    [["1", "", ""], ["4", "6", ""], ["4", "5", "6"]],
+                    [["1", "", ""], ["4", "6", ""], ["4", "5", "6"]],
+                ],
+                [[2, 2, 3], [2, 2, 3]],
+            ),
+        ]
+    )
+    def test_string_split(
+        self, x, delimiter, maxsplit, expected_split, expected_num_splits
+    ):
+        X = make_tensor_value_info("X", TensorProto.STRING, (None))
+        Splits = make_tensor_value_info("Splits", TensorProto.STRING, (None))
+        MaxSplits = make_tensor_value_info("MaxSplits", TensorProto.INT64, (None))
+        node = make_node(
+            "StringSplit",
+            inputs=["X"],
+            outputs=["Splits", "MaxSplits"],
+            delimiter=delimiter,
+            maxsplit=maxsplit,
+        )
+        model = make_model(make_graph([node], "g", [X], [Splits, MaxSplits]))
+        ref = ReferenceEvaluator(model)
+        x = np.array(x)
+        result, num_splits, *_ = ref.run(None, {"X": x})
+        np.testing.assert_array_equal(result, np.array(expected_split, dtype=object))
+        np.testing.assert_array_equal(
+            num_splits, np.array(expected_num_splits, dtype=np.int32)
+        )
 
 
 if __name__ == "__main__":
