@@ -24,11 +24,11 @@ def pad_empty_string(
         raise TypeError("Invalid array type")
 
 
-def split_with_padding(x, separator=" ", maxsplit=None):
+def split_with_padding(x, separator=None, maxsplit=None):
     split_lists = np.char.split(x.astype(np.str_), separator, maxsplit)
     # Find the maximum length after splitting
-    num_splits = np.vectorize(len)(split_lists).astype(np.int32)
-    padding_requirement = (np.max(num_splits) - num_splits).tolist()
+    num_splits = np.vectorize(len, otypes=[np.int32])(split_lists)
+    padding_requirement = (np.max(num_splits, initial=0) - num_splits).tolist()
     split_lists_padded = np.array(
         pad_empty_string(split_lists, padding_requirement), dtype=object
     )
@@ -38,8 +38,8 @@ def split_with_padding(x, separator=" ", maxsplit=None):
 
 class StringSplit(OpRun):
     def _run(self, x, delimiter=None, maxsplit=None):
-        if delimiter is None:
-            delimiter = " "
+        if delimiter == "":
+            delimiter = None
 
         if x.dtype.kind not in _acceptable_str_dtypes:
             raise TypeError(f"Inputs must be string tensors, received dtype {x.dtype}")

@@ -24055,7 +24055,11 @@ This version of the operator has been available since version 20 of the default 
 
 ### <a name="StringSplit-20"></a>**StringSplit-20**</a>
 
-  StringSplit splits a string tensor's elements into substrings based on a delimiter attribute and a maxsplit attribute. The first output of this operator is a tensor of strings representing the substrings from splitting each input string on the delimiter substring. A integer tensor is also returned representing the number of substrings generated. This output tensor has one additional rank compared to the input to store these substrings, as examples below will illustrate.
+  StringSplit splits a string tensor's elements into substrings based on a delimiter attribute and a maxsplit attribute.
+
+  The first output of this operator is a tensor of strings representing the substrings from splitting each input string on the delimiter substring. This tensor has one additional rank compared to the input tensor in order to store the substrings for each input element (where the input tensor is not empty). Note that, in order to ensure the same number of elements are present in the final dimension, this tensor will pad empty strings as illustrated in the examples below. Consecutive delimiters are not grouped together and are deemed to delimit empty strings, except if the delimiter is unspecified or is the empty string (""). In this case, consecutive whitespace characters are regarded as a single separator and leading or trailing whitespace is removed in the output.
+
+  The second output tensor represents the number of substrings generated. The maxsplit attribute can be used to limit the number of splits performed. For elements where fewer splits are possible than specified in maxsplit, it has no effect.
 
 #### Version
 
@@ -24065,9 +24069,9 @@ This version of the operator has been available since version 20 of the default 
 
 <dl>
 <dt><tt>delimiter</tt> : string</dt>
-<dd>Delimiter to split on. If left unset this defaults to a space character.</dd>
+<dd>Delimiter to split on. If left unset or set to the empty string (), the input is split on consecutive whitespace.</dd>
 <dt><tt>maxsplit</tt> : int</dt>
-<dd>Maximum number of splits (from left to right). If left unset, it will make as many splits as possible.</dd>
+<dd>Maximum number of splits (from left to right). If left unset (or if the number of possible splits are less than maxsplit), it will make as many splits as possible.</dd>
 </dl>
 
 #### Inputs

@@ -7616,7 +7616,7 @@ class TestShapeInference(TestShapeInferenceHelper):
 
     @parameterized.expand(all_versions_for("StringSplit"))
     def test_string_split_zero_dimensional_input(self, _, version) -> None:
-        substrings = make_tensor_value_info("substrings", TensorProto.STRING, (None,))
+        substrings = make_tensor_value_info("substrings", TensorProto.STRING, ())
         length = make_tensor_value_info("length", TensorProto.INT32, ())
 
         graph = self._make_graph(

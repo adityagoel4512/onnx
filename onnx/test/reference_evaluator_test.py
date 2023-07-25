@@ -3810,6 +3810,42 @@ class TestReferenceEvaluator(unittest.TestCase):
                 ],
                 [[2, 2, 3], [2, 2, 3]],
             ),
+            (
+                ["hello world !", "  hello   world !", " hello world   ! "],
+                None,
+                None,
+                [
+                    ["hello", "world", "!"],
+                    ["hello", "world", "!"],
+                    ["hello", "world", "!"],
+                ],
+                [3, 3, 3],
+            ),
+            (
+                ["hello world !", "  hello   world !", " hello world   ! "],
+                "",
+                None,
+                [
+                    ["hello", "world", "!"],
+                    ["hello", "world", "!"],
+                    ["hello", "world", "!"],
+                ],
+                [3, 3, 3],
+            ),
+            (
+                ["o-n-n--x-", "o-n----nx"],
+                "-",
+                None,
+                [["o", "n", "n", "", "x", ""], ["o", "n", "", "", "", "nx"]],
+                [6, 6],
+            ),
+            (
+                [],
+                " ",
+                2,
+                [],
+                [],
+            ),
         ]
     )
     def test_string_split(
@@ -3817,7 +3853,7 @@ class TestReferenceEvaluator(unittest.TestCase):
     ):
         X = make_tensor_value_info("X", TensorProto.STRING, (None))
         Splits = make_tensor_value_info("Splits", TensorProto.STRING, (None))
-        MaxSplits = make_tensor_value_info("MaxSplits", TensorProto.INT64, (None))
+        MaxSplits = make_tensor_value_info("MaxSplits", TensorProto.INT32, (None))
         node = make_node(
             "StringSplit",
             inputs=["X"],
@@ -3827,8 +3863,7 @@ class TestReferenceEvaluator(unittest.TestCase):
         )
         model = make_model(make_graph([node], "g", [X], [Splits, MaxSplits]))
         ref = ReferenceEvaluator(model)
-        x = np.array(x)
-        result, num_splits, *_ = ref.run(None, {"X": x})
+        result, num_splits, *_ = ref.run(None, {"X": np.array(x, dtype=object)})
         np.testing.assert_array_equal(result, np.array(expected_split, dtype=object))
         np.testing.assert_array_equal(
             num_splits, np.array(expected_num_splits, dtype=np.int32)
