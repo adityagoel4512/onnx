@@ -3785,7 +3785,13 @@ class TestReferenceEvaluator(unittest.TestCase):
 
     @parameterized.parameterized.expand(
         [
-            (["1,2,3", "4,5,6"], ",", None, [["1", "2", "3"], ["4", "5", "6"]], [3, 3]),
+            (
+                ["1,2,3", "4,5,6"],
+                ",",
+                None,
+                [["1", "2", "3"], ["4", "5", "6"]],
+                [3, 3],
+            ),
             (
                 ["1,", "4,6", ""],
                 ",",
@@ -3843,13 +3849,18 @@ class TestReferenceEvaluator(unittest.TestCase):
                 [],
                 " ",
                 2,
-                [],
+                np.array([]).reshape((0, 0)),
                 [],
             ),
         ]
     )
     def test_string_split(
-        self, x, delimiter, maxsplit, expected_split, expected_num_splits
+        self,
+        x,
+        delimiter,
+        maxsplit,
+        expected_split,
+        expected_num_splits,
     ):
         X = make_tensor_value_info("X", TensorProto.STRING, (None))
         Splits = make_tensor_value_info("Splits", TensorProto.STRING, (None))
@@ -3863,7 +3874,8 @@ class TestReferenceEvaluator(unittest.TestCase):
         )
         model = make_model(make_graph([node], "g", [X], [Splits, MaxSplits]))
         ref = ReferenceEvaluator(model)
-        result, num_splits, *_ = ref.run(None, {"X": np.array(x, dtype=object)})
+        x = np.array(x, dtype=object)
+        result, num_splits, *_ = ref.run(None, {"X": x})
         np.testing.assert_array_equal(result, np.array(expected_split, dtype=object))
         np.testing.assert_array_equal(
             num_splits, np.array(expected_num_splits, dtype=np.int32)

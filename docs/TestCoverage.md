@@ -20934,7 +20934,7 @@ node = onnx.helper.make_node(
 
 x = np.array([]).astype(object)
 
-substrings = np.array([]).astype(object)
+substrings = np.array([]).astype(object).reshape(0, 0)
 
 length = np.array([], dtype=np.int32)
 

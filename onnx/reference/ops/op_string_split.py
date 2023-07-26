@@ -33,6 +33,8 @@ def split_with_padding(x, separator=None, maxsplit=None):
     split_lists_padded = np.array(
         pad_empty_string(split_lists, padding_requirement), dtype=object
     )
+    if x.size == 0:
+        split_lists_padded = split_lists_padded.reshape(*x.shape, 0)
     return split_lists_padded, num_splits
 
 
