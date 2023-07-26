@@ -20943,7 +20943,10 @@ expect(
     inputs=[x],
     outputs=[substrings, length],
     name="test_string_split_empty_tensor",
-    output_type_protos=[onnx.helper.make_tensor_type_proto(onnx.TensorProto.STRING, (0, None)), None],
+    output_type_protos=[
+        onnx.helper.make_tensor_type_proto(onnx.TensorProto.STRING, (0, None)),
+        None,
+    ],
 )
 ```
 
