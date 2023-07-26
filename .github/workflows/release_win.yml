@@ -44,7 +44,6 @@ jobs:
 
     - name: Build ONNX wheel
       run: |
-        conda list
         $arch = 'x64'
         if ('${{ matrix.architecture }}' -eq 'x86') {
           $arch = 'Win32'
