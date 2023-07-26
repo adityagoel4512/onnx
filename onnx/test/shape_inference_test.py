@@ -7653,6 +7653,26 @@ class TestShapeInference(TestShapeInferenceHelper):
             opset_imports=[helper.make_opsetid(ONNX_DOMAIN, version)],
         )
 
+    @parameterized.expand(all_versions_for("StringSplit"))
+    def test_string_split_empty_input(self, _, version) -> None:
+        substrings = make_tensor_value_info(
+            "substrings", TensorProto.STRING, ("M", 3, 0, None)
+        )
+        length = make_tensor_value_info("length", TensorProto.INT32, ("M", 3, 0))
+
+        graph = self._make_graph(
+            [
+                ("x", TensorProto.STRING, ("M", 3, 0)),
+            ],
+            [make_node("StringSplit", ["x"], ["substrings", "length"], maxsplit=2)],
+            [substrings, length],
+        )
+        self._assert_inferred(
+            graph,
+            [substrings, length],
+            opset_imports=[helper.make_opsetid(ONNX_DOMAIN, version)],
+        )
+
     def test_optional_tensor_get_element(self) -> None:
         tensor_type_proto = helper.make_tensor_type_proto(
             elem_type=TensorProto.DOUBLE, shape=[2, 1, 4]
