@@ -20824,7 +20824,7 @@ expect(
 
 
 ### StringSplit
-There are 5 test cases, listed as following:
+There are 4 test cases, listed as following:
 <details>
 <summary>basic</summary>
 
@@ -20917,33 +20917,6 @@ for delimiter, test_name in (
         outputs=[substrings, length],
         name=test_name,
     )
-```
-
-</details>
-<details>
-<summary>empty_string_split</summary>
-
-```python
-node = onnx.helper.make_node(
-    "StringSplit",
-    inputs=["x"],
-    outputs=["substrings", "length"],
-    delimiter=None,
-    maxsplit=None,
-)
-
-x = np.array([]).astype(object)
-
-substrings = np.array([]).astype(object)
-
-length = np.array([], dtype=np.int32)
-
-expect(
-    node,
-    inputs=[x],
-    outputs=[substrings, length],
-    name="test_empty_tensor_string_split",
-)
 ```
 
 </details>

@@ -7596,6 +7596,27 @@ class TestShapeInference(TestShapeInferenceHelper):
         )
 
     @parameterized.expand(all_versions_for("StringSplit"))
+    def test_string_split_symbolic(self, _, version) -> None:
+        substrings = make_tensor_value_info(
+            "substrings",
+            TensorProto.STRING,
+            ("A", None),
+        )
+        length = make_tensor_value_info("length", TensorProto.INT32, ("A",))
+        graph = self._make_graph(
+            [
+                ("x", TensorProto.STRING, ("A",)),
+            ],
+            [make_node("StringSplit", ["x"], ["substrings", "length"])],
+            [substrings, length],
+        )
+        self._assert_inferred(
+            graph,
+            [substrings, length],
+            opset_imports=[helper.make_opsetid(ONNX_DOMAIN, version)],
+        )
+
+    @parameterized.expand(all_versions_for("StringSplit"))
     def test_string_split_nested(self, _, version) -> None:
         substrings = make_tensor_value_info(
             "substrings", TensorProto.STRING, (2, 4, 3, None)
@@ -7616,7 +7637,7 @@ class TestShapeInference(TestShapeInferenceHelper):
 
     @parameterized.expand(all_versions_for("StringSplit"))
     def test_string_split_zero_dimensional_input(self, _, version) -> None:
-        substrings = make_tensor_value_info("substrings", TensorProto.STRING, ())
+        substrings = make_tensor_value_info("substrings", TensorProto.STRING, (None,))
         length = make_tensor_value_info("length", TensorProto.INT32, ())
 
         graph = self._make_graph(

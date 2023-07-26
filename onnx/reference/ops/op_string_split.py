@@ -29,10 +29,10 @@ def split_with_padding(x, separator=None, maxsplit=None):
     # Find the maximum length after splitting
     num_splits = np.vectorize(len, otypes=[np.int32])(split_lists)
     padding_requirement = (np.max(num_splits, initial=0) - num_splits).tolist()
+    # Add padding to lists that are shorter than the maximum length
     split_lists_padded = np.array(
         pad_empty_string(split_lists, padding_requirement), dtype=object
     )
-    # Add padding to lists that are shorter than the maximum length
     return split_lists_padded, num_splits
 
 
