@@ -30553,6 +30553,36 @@ for delimiter, test_name in (
 
 
 <details>
+<summary>empty_string_split</summary>
+
+```python
+node = onnx.helper.make_node(
+    "StringSplit",
+    inputs=["x"],
+    outputs=["substrings", "length"],
+    delimiter=None,
+    maxsplit=None,
+)
+
+x = np.array([]).astype(object)
+
+substrings = np.array([]).astype(object)
+
+length = np.array([], dtype=np.int32)
+
+expect(
+    node,
+    inputs=[x],
+    outputs=[substrings, length],
+    name="test_string_split_empty_tensor",
+    output_type_protos=[onnx.helper.make_tensor_type_proto(onnx.TensorProto.STRING, (0, None)), None],
+)
+```
+
+</details>
+
+
+<details>
 <summary>maxsplit</summary>
 
 ```python

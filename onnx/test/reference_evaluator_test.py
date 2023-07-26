@@ -3839,6 +3839,13 @@ class TestReferenceEvaluator(unittest.TestCase):
                 [["o", "n", "n", "", "x", ""], ["o", "n", "", "", "", "nx"]],
                 [6, 6],
             ),
+            (
+                [],
+                " ",
+                2,
+                [],
+                [],
+            ),
         ]
     )
     def test_string_split(
