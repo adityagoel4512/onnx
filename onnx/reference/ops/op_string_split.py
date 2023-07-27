@@ -27,7 +27,7 @@ def pad_empty_string(
 def split_with_padding(x, separator=None, maxsplit=None):
     split_lists = np.char.split(x.astype(np.str_), separator, maxsplit)
     # Find the maximum length after splitting
-    num_splits = np.vectorize(len, otypes=[np.int32])(split_lists)
+    num_splits = np.vectorize(len, otypes=[np.int64])(split_lists)
     padding_requirement = (np.max(num_splits, initial=0) - num_splits).tolist()
     # Add padding to lists that are shorter than the maximum length
     split_lists_padded = np.array(

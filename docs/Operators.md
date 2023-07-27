@@ -30444,7 +30444,7 @@ This version of the operator has been available since version 20 of the default 
 <dd>The input must be a UTF-8 string tensor</dd>
 <dt><tt>T2</tt> : tensor(string)</dt>
 <dd>Tensor of substrings.</dd>
-<dt><tt>T3</tt> : tensor(int32)</dt>
+<dt><tt>T3</tt> : tensor(int64)</dt>
 <dd>The number of substrings generated.</dd>
 </dl>
 
@@ -30467,7 +30467,7 @@ x = np.array(["abc.com", "def.net"]).astype(object)
 
 substrings = np.array([["abc", "com"], ["def", "net"]]).astype(object)
 
-length = np.array([2, 2], dtype=np.int32)
+length = np.array([2, 2], dtype=np.int64)
 
 expect(
     node,
@@ -30498,7 +30498,7 @@ substrings = np.array(
     [["o", "n", "n", "", "x", ""], ["o", "n", "", "", "", "nx"]]
 ).astype(object)
 
-length = np.array([6, 6], dtype=np.int32)
+length = np.array([6, 6], dtype=np.int64)
 
 expect(
     node,
@@ -30539,7 +30539,7 @@ for delimiter, test_name in (
         ]
     ).astype(object)
 
-    length = np.array([3, 3, 3], dtype=np.int32)
+    length = np.array([3, 3, 3], dtype=np.int64)
 
     expect(
         node,
@@ -30568,7 +30568,7 @@ x = np.array([]).astype(object)
 
 substrings = np.array([]).astype(object).reshape(0, 0)
 
-length = np.array([], dtype=np.int32)
+length = np.array([], dtype=np.int64)
 
 expect(
     node,
@@ -30607,7 +30607,7 @@ substrings = np.array(
     ]
 ).astype(object)
 
-length = np.array([[2, 1], [3, 3]], np.int32)
+length = np.array([[2, 1], [3, 3]], np.int64)
 
 expect(
     node,

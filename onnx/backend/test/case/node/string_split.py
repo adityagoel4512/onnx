@@ -24,7 +24,7 @@ class StringSplit(Base):
 
         substrings = np.array([["abc", "com"], ["def", "net"]]).astype(object)
 
-        length = np.array([2, 2], dtype=np.int32)
+        length = np.array([2, 2], dtype=np.int64)
 
         expect(
             node,
@@ -53,7 +53,7 @@ class StringSplit(Base):
             ]
         ).astype(object)
 
-        length = np.array([[2, 1], [3, 3]], np.int32)
+        length = np.array([[2, 1], [3, 3]], np.int64)
 
         expect(
             node,
@@ -78,7 +78,7 @@ class StringSplit(Base):
             [["o", "n", "n", "", "x", ""], ["o", "n", "", "", "", "nx"]]
         ).astype(object)
 
-        length = np.array([6, 6], dtype=np.int32)
+        length = np.array([6, 6], dtype=np.int64)
 
         expect(
             node,
@@ -113,7 +113,7 @@ class StringSplit(Base):
                 ]
             ).astype(object)
 
-            length = np.array([3, 3, 3], dtype=np.int32)
+            length = np.array([3, 3, 3], dtype=np.int64)
 
             expect(
                 node,
@@ -136,7 +136,7 @@ class StringSplit(Base):
 
         substrings = np.array([]).astype(object).reshape(0, 0)
 
-        length = np.array([], dtype=np.int32)
+        length = np.array([], dtype=np.int64)
 
         expect(
             node,

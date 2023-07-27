@@ -7581,7 +7581,7 @@ class TestShapeInference(TestShapeInferenceHelper):
             TensorProto.STRING,
             (2, None),
         )
-        length = make_tensor_value_info("length", TensorProto.INT32, (2,))
+        length = make_tensor_value_info("length", TensorProto.INT64, (2,))
         graph = self._make_graph(
             [
                 ("x", TensorProto.STRING, (2,)),
@@ -7602,7 +7602,7 @@ class TestShapeInference(TestShapeInferenceHelper):
             TensorProto.STRING,
             ("A", None),
         )
-        length = make_tensor_value_info("length", TensorProto.INT32, ("A",))
+        length = make_tensor_value_info("length", TensorProto.INT64, ("A",))
         graph = self._make_graph(
             [
                 ("x", TensorProto.STRING, ("A",)),
@@ -7621,7 +7621,7 @@ class TestShapeInference(TestShapeInferenceHelper):
         substrings = make_tensor_value_info(
             "substrings", TensorProto.STRING, (2, 4, 3, None)
         )
-        length = make_tensor_value_info("length", TensorProto.INT32, (2, 4, 3))
+        length = make_tensor_value_info("length", TensorProto.INT64, (2, 4, 3))
         graph = self._make_graph(
             [
                 ("x", TensorProto.STRING, (2, 4, 3)),
@@ -7638,7 +7638,7 @@ class TestShapeInference(TestShapeInferenceHelper):
     @parameterized.expand(all_versions_for("StringSplit"))
     def test_string_split_zero_dimensional_input(self, _, version) -> None:
         substrings = make_tensor_value_info("substrings", TensorProto.STRING, (None,))
-        length = make_tensor_value_info("length", TensorProto.INT32, ())
+        length = make_tensor_value_info("length", TensorProto.INT64, ())
 
         graph = self._make_graph(
             [
@@ -7658,7 +7658,7 @@ class TestShapeInference(TestShapeInferenceHelper):
         substrings = make_tensor_value_info(
             "substrings", TensorProto.STRING, ("M", 3, 0, None)
         )
-        length = make_tensor_value_info("length", TensorProto.INT32, ("M", 3, 0))
+        length = make_tensor_value_info("length", TensorProto.INT64, ("M", 3, 0))
 
         graph = self._make_graph(
             [

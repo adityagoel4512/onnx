@@ -75,7 +75,7 @@ ONNX_OPERATOR_SET_SCHEMA(
             OpSchema::NonDifferentiable)
         .TypeConstraint("T1", {"tensor(string)"}, "The input must be a UTF-8 string tensor")
         .TypeConstraint("T2", {"tensor(string)"}, "Tensor of substrings.")
-        .TypeConstraint("T3", {"tensor(int32)"}, "The number of substrings generated.")
+        .TypeConstraint("T3", {"tensor(int64)"}, "The number of substrings generated.")
         .SetDoc(StringSplit_doc)
         .TypeAndShapeInferenceFunction([](InferenceContext& ctx) {
           if (!hasInputShape(ctx, 0)) {
@@ -96,7 +96,7 @@ ONNX_OPERATOR_SET_SCHEMA(
 
           // The output tensor containing the number of substrings has identical shape to the input but produces int32
           // results.
-          ctx.getOutputType(1)->mutable_tensor_type()->set_elem_type(TensorProto::INT32);
+          ctx.getOutputType(1)->mutable_tensor_type()->set_elem_type(TensorProto::INT64);
           propagateShapeFromInputToOutput(ctx, 0, 1);
         }));
 

@@ -3878,7 +3878,7 @@ class TestReferenceEvaluator(unittest.TestCase):
         result, num_splits, *_ = ref.run(None, {"X": x})
         np.testing.assert_array_equal(result, np.array(expected_split, dtype=object))
         np.testing.assert_array_equal(
-            num_splits, np.array(expected_num_splits, dtype=np.int32)
+            num_splits, np.array(expected_num_splits, dtype=np.int64)
         )
 
 

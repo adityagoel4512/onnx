@@ -24097,7 +24097,7 @@ This version of the operator has been available since version 20 of the default 
 <dd>The input must be a UTF-8 string tensor</dd>
 <dt><tt>T2</tt> : tensor(string)</dt>
 <dd>Tensor of substrings.</dd>
-<dt><tt>T3</tt> : tensor(int32)</dt>
+<dt><tt>T3</tt> : tensor(int64)</dt>
 <dd>The number of substrings generated.</dd>
 </dl>
 
