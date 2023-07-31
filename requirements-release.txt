@@ -7,4 +7,4 @@ wheel
 setuptools
 twine
 parameterized
-google-re2
+google-re2>=1.1
