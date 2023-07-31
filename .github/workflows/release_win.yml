@@ -13,7 +13,7 @@ jobs:
       matrix:
         python-version: ['3.9']
         architecture: ['x86']
-        winbox: ['windows-2019']
+        winbox: ['windows-2019', 'windows-latest']
     steps:
     - name: Checkout ONNX
       uses: actions/checkout@c85c95e3d7251135ab7dc9ce3241c5835cc595a9 # v3.5.3
@@ -42,5 +42,5 @@ jobs:
       run: |
         python -m pip install -q --upgrade pip
         cd onnx
-        pip install . "[reference]"
+        pip install ".[reference]"
         pytest .
