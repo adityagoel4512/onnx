@@ -12,7 +12,7 @@ jobs:
     strategy:
       matrix:
         python-version: ['3.9']
-        architecture: ['x86']
+        architecture: ['x64']
         winbox: ['windows-2019', 'windows-latest']
     steps:
     - name: Checkout ONNX
