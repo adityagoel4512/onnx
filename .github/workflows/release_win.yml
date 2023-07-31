@@ -1,6 +1,6 @@
 name: WindowsRelease
 
-on: [push
+on: [push]
 
 permissions:  # set top-level default permissions as security best practice
   contents: read
