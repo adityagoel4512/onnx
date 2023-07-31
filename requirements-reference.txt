@@ -1,1 +1,7 @@
 google-re2==1.0
+pytest
+nbval
+wheel
+setuptools
+twine
+parameterized
