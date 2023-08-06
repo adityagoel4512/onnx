@@ -469,6 +469,16 @@ class OpSchema final {
   ATTR_SETTER_WITH_DEFAULT_VALUE(GraphProto)
   ATTR_SETTER_WITH_DEFAULT_VALUE(TypeProto)
 
+#define ATTR_SETTER_WITH_CONDITIONAL_DEFAULT_VALUE(TypeName)     \
+  OpSchema& Attr(                                                \
+      std::string name,                                          \
+      std::string description,                                   \
+      AttributeProto::AttributeType type,                        \
+      std::function<bool(OpSchema&, TypeName*)> default_factory, \
+      std::string condition_reason);
+
+  ATTR_SETTER_WITH_CONDITIONAL_DEFAULT_VALUE(TensorProto)
+
   // Register "required" attribute without default value.
   OpSchema& Attr(std::string name, std::string description, AttributeProto::AttributeType type, bool required = true);
 

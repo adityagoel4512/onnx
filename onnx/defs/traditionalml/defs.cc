@@ -3,6 +3,7 @@
  */
 
 #include "onnx/defs/schema.h"
+#include "onnx/defs/tensor_proto_util.h"
 
 #ifdef ONNX_ML
 namespace ONNX_NAMESPACE {
@@ -357,9 +358,42 @@ ONNX_ML_OPERATOR_SET_SCHEMA(
         .Attr("default_float", "A float.", AttributeProto::FLOAT, -0.f)
         .Attr(
             "default_as_tensor",
-            "A default tensor. Must be set if values_as_tensor is set, optional otherwise.",
+            "A default tensor.",
             AttributeProto::TENSOR,
-            OPTIONAL_VALUE)
+            [](OpSchema& schema, TensorProto* tensor_proto) {
+              auto attributes = schema.attributes();
+              int values_type = -1;
+
+              if (attributes.find("values_strings") != attributes.end()) {
+                values_type = TensorProto_DataType_STRING;
+              } else if (attributes.find("values_int64s") != attributes.end()) {
+                values_type = TensorProto_DataType_INT64;
+              } else if (attributes.find("values_floats") != attributes.end()) {
+                values_type = TensorProto_DataType_FLOAT;
+              } else if (attributes.find("values_as_tensor") != attributes.end()) {
+                values_type = attributes.find("values_as_tensor")->second.default_value.t().data_type();
+              }
+              switch (values_type) {
+                case TensorProto_DataType_STRING:
+                  *tensor_proto = ToTensor<std::string>({"_Unused"});
+                  return true;
+                case TensorProto_DataType_INT64:
+                  *tensor_proto = ToTensor<int64_t>({-1});
+                  return true;
+                case TensorProto_DataType_FLOAT:
+                  *tensor_proto = ToTensor<float>({-0.f});
+                  return true;
+                case TensorProto_DataType_INT32:
+                  *tensor_proto = ToTensor<int32_t>({-1});
+                  return true;
+                case TensorProto_DataType_INT16:
+                  *tensor_proto = ToTensor<int16_t>({-1});
+                  return true;
+                default:
+                  return false;
+              }
+            },
+            "defaults to {\"_Unused\"} if values_* has string type, {-1} if values_* has integral type, and {-0.f} if values_* has float type.")
         .TypeAndShapeInferenceFunction([](InferenceContext& ctx) {
           int key_length, key_type;
           std::tie(key_type, key_length) =
@@ -402,12 +436,6 @@ ONNX_ML_OPERATOR_SET_SCHEMA(
             if (default_as_tensor != nullptr && default_as_tensor->t().dims(0) != 1) {
               fail_shape_inference("default_as_tensor must be a singleton if set.");
             }
-          } else if (ctx.getAttribute("values_as_tensor") != nullptr) {
-            // We currently require that default_as_tensor be set if values_as_tensor is set.
-            // An alternative approach could be to infer a default value here
-            // by inserting an AttributeProto with the same element type as values_as_tensor
-            // and an appropriate value.
-            fail_shape_inference("A default value must be set if values_as_tensor is set.");
           }
 
           if (value_length != key_length) {

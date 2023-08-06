@@ -5703,22 +5703,6 @@ class TestShapeInference(TestShapeInferenceHelper):
             opset_imports=opset_imports,
         )
 
-        # default_as_tensor is required when keys_as_tensor and values_as_tensor are provided
-        graph = self._make_graph(
-            [("x", TensorProto.STRING, ("M", None, 3, 12))],
-            [
-                make_node(
-                    "LabelEncoder",
-                    ["x"],
-                    ["y"],
-                    domain=ONNX_ML_DOMAIN,
-                    keys_as_tensor=key_tensor,
-                    values_as_tensor=values_tensor,
-                )
-            ],
-            [],
-        )
-
         self.assertRaises(
             onnx.shape_inference.InferenceError,
             self._inferred,

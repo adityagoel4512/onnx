@@ -22,6 +22,14 @@ namespace ONNX_NAMESPACE {
     return t;                                       \
   }
 
+template <>
+TensorProto ToTensor<int16_t>(const int16_t& value) {
+  TensorProto t;
+  t.set_data_type(TensorProto_DataType_INT16);
+  t.add_int32_data(value);
+  return t;
+}
+
 #define DEFINE_TO_TENSOR_LIST(type, enumType, field)            \
   template <>                                                   \
   TensorProto ToTensor<type>(const std::vector<type>& values) { \
@@ -33,6 +41,17 @@ namespace ONNX_NAMESPACE {
     }                                                           \
     return t;                                                   \
   }
+
+template <>
+TensorProto ToTensor<int16_t>(const std::vector<int16_t>& values) {
+  TensorProto t;
+  t.clear_int32_data();
+  t.set_data_type(TensorProto_DataType_INT16);
+  for (const int16_t& val : values) {
+    t.add_int32_data(val);
+  }
+  return t;
+}
 
 #define DEFINE_PARSE_DATA(type, typed_data_fetch, tensorproto_datatype)                                            \
   template <>                                                                                                      \

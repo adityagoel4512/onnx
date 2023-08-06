@@ -458,6 +458,26 @@ OpSchema& OpSchema::Attr(Attribute attr) {
   return *this;
 }
 
+OpSchema& OpSchema::Attr(
+    std::string name,
+    std::string description,
+    AttributeProto::AttributeType type,
+    std::function<bool(OpSchema&, TensorProto*)> default_factory,
+    std::string condition_reason) {
+  auto it = attributes_.find(name);
+  // We do not override any user provided attributes
+  if (it == attributes_.end()) {
+    AttributeProto a;
+    if (default_factory(*this, a.mutable_t())) {
+      a.set_name(name);
+      a.set_type(type);
+      a.set_doc_string(std::move(condition_reason));
+      Attr(Attribute(std::move(name), std::move(description), std::move(a)));
+    }
+  }
+  return *this;
+}
+
 OpSchema& OpSchema::Attr(std::string name, std::string description, AttributeProto::AttributeType type, bool required) {
   Attr(Attribute{std::move(name), std::move(description), type, required});
   return *this;
