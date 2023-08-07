@@ -3,6 +3,7 @@
  */
 
 #include "onnx/defs/schema.h"
+#include "onnx/defs/tensor_proto_util.h"
 
 #ifdef ONNX_ML
 namespace ONNX_NAMESPACE {
@@ -357,9 +358,8 @@ ONNX_ML_OPERATOR_SET_SCHEMA(
         .Attr("default_float", "A float.", AttributeProto::FLOAT, -0.f)
         .Attr(
             "default_as_tensor",
-            "A default tensor. Must be set if values_as_tensor is set, optional otherwise.",
-            AttributeProto::TENSOR,
-            OPTIONAL_VALUE)
+            "A default tensor.",
+            "defaults to {\"_Unused\"} if values_* has string type, {-1} if values_* has integral type, and {-0.f} if values_* has float type.")
         .TypeAndShapeInferenceFunction([](InferenceContext& ctx) {
           int key_length, key_type;
           std::tie(key_type, key_length) =
@@ -402,14 +402,22 @@ ONNX_ML_OPERATOR_SET_SCHEMA(
             if (default_as_tensor != nullptr && default_as_tensor->t().dims(0) != 1) {
               fail_shape_inference("default_as_tensor must be a singleton if set.");
             }
-          } else if (ctx.getAttribute("values_as_tensor") != nullptr) {
-            // We currently require that default_as_tensor be set if values_as_tensor is set.
-            // An alternative approach could be to infer a default value here
-            // by inserting an AttributeProto with the same element type as values_as_tensor
-            // and an appropriate value.
-            fail_shape_inference("A default value must be set if values_as_tensor is set.");
+          } else {
+            // We should probably not actually do this since it means shape inferred models may have the default in
+            // place while non-shape inferred ones don't.
+            switch (value_type) {
+              case TensorProto_DataType_STRING:
+                ctx.updateAttribute("default_as_tensor", ToTensor<std::string>({"_Unused"}));
+              case TensorProto_DataType_INT64:
+                ctx.updateAttribute("default_as_tensor", ToTensor<int64_t>({-1}));
+              case TensorProto_DataType_FLOAT:
+                ctx.updateAttribute("default_as_tensor", ToTensor<float>({-0.f}));
+              case TensorProto_DataType_INT32:
+                ctx.updateAttribute("default_as_tensor", ToTensor<int32_t>({-1}));
+              case TensorProto_DataType_INT16:
+                ctx.updateAttribute("default_as_tensor", ToTensor<int16_t>({-1}));
+            }
           }
-
           if (value_length != key_length) {
             fail_shape_inference(
                 "The number of keys ",

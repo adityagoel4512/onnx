@@ -883,6 +883,13 @@ struct FunctionInferenceContext : public InferenceContext {
       return iter->second;
     }
   }
+
+  // We should probably not actually do this since it means shape inferred models may have the default in place while
+  // non-shape inferred ones don't.
+  bool updateAttribute(const std::string& name, const TensorProto& data) override {
+    return false;
+  }
+
   size_t getNumInputs() const override {
     return input_types_.size();
   }

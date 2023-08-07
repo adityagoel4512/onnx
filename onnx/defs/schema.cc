@@ -463,6 +463,15 @@ OpSchema& OpSchema::Attr(std::string name, std::string description, AttributePro
   return *this;
 }
 
+OpSchema& OpSchema::Attr(std::string name, std::string description, std::string conditionExplanation) {
+  AttributeProto a;
+  a.set_name(name);
+  a.set_type(AttributeProto::TENSOR);
+  a.mutable_doc_string()->assign(std::move(conditionExplanation));
+  Attr(Attribute{std::move(name), std::move(description), std::move(a)});
+  return *this;
+}
+
 OpSchema& OpSchema::Attr(const char* name, const char* description, AttributeProto::AttributeType type, bool required) {
   return Attr(std::string(name), std::string(description), type, required);
 }

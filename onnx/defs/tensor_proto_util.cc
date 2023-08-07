@@ -117,6 +117,7 @@ namespace ONNX_NAMESPACE {
 
 DEFINE_TO_TENSOR_ONE(float, TensorProto_DataType_FLOAT, float)
 DEFINE_TO_TENSOR_ONE(bool, TensorProto_DataType_BOOL, int32)
+DEFINE_TO_TENSOR_ONE(int16_t, TensorProto_DataType_INT16, int32)
 DEFINE_TO_TENSOR_ONE(int32_t, TensorProto_DataType_INT32, int32)
 DEFINE_TO_TENSOR_ONE(int64_t, TensorProto_DataType_INT64, int64)
 DEFINE_TO_TENSOR_ONE(uint64_t, TensorProto_DataType_UINT64, uint64)

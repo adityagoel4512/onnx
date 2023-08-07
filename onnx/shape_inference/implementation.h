@@ -202,6 +202,16 @@ struct InferenceContextImpl : public InferenceContext {
     }
   }
 
+  bool updateAttribute(const std::string& name, const TensorProto& value) override {
+    auto iter = attributesByName_.find(name);
+    if (iter == attributesByName_.end()) {
+      return false;
+    } else {
+      *(iter->second->mutable_t()) = value;
+      return true;
+    }
+  }
+
   size_t getNumInputs() const override {
     return allInputTypes_.size();
   }
@@ -276,7 +286,7 @@ struct InferenceContextImpl : public InferenceContext {
   std::vector<const TensorProto*> allInputData_;
   std::vector<const SparseTensorProto*> allInputSparseData_;
   std::vector<const TensorShapeProto*> allShapeInputData_;
-  std::unordered_map<std::string, const AttributeProto*> attributesByName_;
+  std::unordered_map<std::string, AttributeProto*> attributesByName_;
   std::unordered_map<std::string, GraphProto*> graphProtoAttributesByName_;
   std::vector<const TypeProto*> allInputTypes_;
   std::vector<TypeProto> allOutputTypes_;
