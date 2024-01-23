@@ -84,11 +84,21 @@ class OpSet_OnnxML_ver4 {
   }
 };
 
+class ONNX_OPERATOR_SET_SCHEMA_CLASS_NAME(OnnxML, 5, TreeEnsembleRegressor);
+
+class OpSet_OnnxML_ver5 {
+ public:
+  static void ForEachSchema(std::function<void(OpSchema&&)> fn) {
+    fn(GetOpSchema<ONNX_OPERATOR_SET_SCHEMA_CLASS_NAME(OnnxML, 5, TreeEnsembleRegressor)>());
+  }
+};
+
 inline void RegisterOnnxMLOperatorSetSchema() {
   RegisterOpSetSchema<OpSet_OnnxML_ver1>();
   RegisterOpSetSchema<OpSet_OnnxML_ver2>();
   RegisterOpSetSchema<OpSet_OnnxML_ver3>();
   RegisterOpSetSchema<OpSet_OnnxML_ver4>();
+  RegisterOpSetSchema<OpSet_OnnxML_ver5>();
 }
 } // namespace ONNX_NAMESPACE
 

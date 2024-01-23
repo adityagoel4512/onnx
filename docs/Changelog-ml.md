@@ -1226,3 +1226,77 @@ This version of the operator has been available since version 4 of the 'ai.onnx.
 <dd>Output type is determined by the specified 'values_*' attribute.</dd>
 </dl>
 
+## Version 5 of the 'ai.onnx.ml' operator set
+### <a name="ai.onnx.ml.TreeEnsembleRegressor-5"></a>**ai.onnx.ml.TreeEnsembleRegressor-5**</a>
+
+  Tree Ensemble regressor.  Returns the regressed values for each input in a batch.
+      Inputs have dimensions `[N, F]` where `N` is the input batch size and `F` is the number of input features.
+      Outputs have dimensions `[N, num_targets]` where `N` is the batch size and `num_targets` is the number of targets, which is a configurable attribute.
+
+      The encoding of this attribute is split along interior nodes and the leaves of the trees. Notably, attributes with the prefix `nodes_*` are associated with interior nodes, and attributes with the prefix `leaf_*` are associated with leaves.
+      The attributes `nodes_*` must all have the same length and encode a sequence of tuples, as defined by taking all the `nodes_*` fields at a given position.
+
+      All fields prefixed with `leaf_*` represent tree leaves, and similarly define tuples of leaves and must have identical length.
+
+#### Version
+
+This version of the operator has been available since version 5 of the 'ai.onnx.ml' operator set.
+
+#### Attributes
+
+<dl>
+<dt><tt>aggregate_function</tt> : int (default is 1)</dt>
+<dd>Defines how to aggregate leaf values within a target. <br>One of 'AVERAGE' (0) 'SUM' (1) 'MIN' (2) 'MAX (3) defaults to 'SUM' (1)</dd>
+<dt><tt>leaf_targetids</tt> : list of ints (required)</dt>
+<dd>The index of the target that this leaf contributes to (this must be in range `[0, n_targets)`).</dd>
+<dt><tt>leaf_weights</tt> : tensor (required)</dt>
+<dd>The weight for each target</dd>
+<dt><tt>membership_values</tt> : tensor</dt>
+<dd>Members to test membership of for each set membership node. List all of the members to test again in the order that the 'SET_MEMBER' mode appears in `node_modes`, delimited by `NaN`s. Will have the same number of sets of values as nodes with mode 'SET_MEMBER'. This may be ommitted if the node doesn't contain any 'SET_MEMBER' nodes.</dd>
+<dt><tt>n_targets</tt> : int</dt>
+<dd>The total number of targets.</dd>
+<dt><tt>nodes_falseleafs</tt> : list of ints (required)</dt>
+<dd>1 if false branch is leaf for each node and 0 if an interior node. To represent a tree that is a leaf (only has one node), one can do so by having a single `nodes_*` entry with true and false branches referencing the same `leaf_*` entry</dd>
+<dt><tt>nodes_falsenodeids</tt> : list of ints (required)</dt>
+<dd>If `nodes_falseleafs` is false at an entry, this represents the position of the false branch node. This position can be used to index into a `nodes_*` entry. If `nodes_falseleafs` is false, it is an index into the leaf_* attributes.</dd>
+<dt><tt>nodes_featureids</tt> : list of ints (required)</dt>
+<dd>Feature id for each node.</dd>
+<dt><tt>nodes_hitrates</tt> : tensor</dt>
+<dd>Popularity of each node, used for performance and may be omitted.</dd>
+<dt><tt>nodes_missing_value_tracks_true</tt> : list of ints</dt>
+<dd>For each node, define whether to follow the true branch (if attribute value is 1) or false branch (if attribute value is 0) in the presence of a NaN input feature. This attribute may be left undefined and the default value is false (0) for all nodes.</dd>
+<dt><tt>nodes_modes</tt> : list of ints (required)</dt>
+<dd>The comparison operation performed by the node. This is encoded as an enumeration of 0 ('BRANCH_LEQ'), 1 ('BRANCH_LT'), 2 ('BRANCH_GTE'), 3 ('BRANCH_GT'), 4 ('BRANCH_EQ'), 5 ('BRANCH_NEQ'), and 6 ('SET_MEMBER').</dd>
+<dt><tt>nodes_splits</tt> : tensor (required)</dt>
+<dd>Thresholds to do the splitting on for each node with mode that is not 'SET_MEMBER'.</dd>
+<dt><tt>nodes_trueleafs</tt> : list of ints (required)</dt>
+<dd>1 if true branch is leaf for each node and 0 an interior node. To represent a tree that is a leaf (only has one node), one can do so by having a single `nodes_*` entry with true and false branches referencing the same `leaf_*` entry</dd>
+<dt><tt>nodes_truenodeids</tt> : list of ints (required)</dt>
+<dd>If `nodes_trueleafs` is false at an entry, this represents the position of the true branch node. This position can be used to index into a `nodes_*` entry. If `nodes_trueleafs` is false, it is an index into the leaf_* attributes.</dd>
+<dt><tt>post_transform</tt> : int (default is 0)</dt>
+<dd>Indicates the transform to apply to the score. <br>One of 'NONE' (0), 'SOFTMAX' (1), 'LOGISTIC' (2), 'SOFTMAX_ZERO' (3) or 'PROBIT' (4), defaults to 'NONE' (0)</dd>
+<dt><tt>tree_roots</tt> : list of ints (required)</dt>
+<dd>Index into `nodes_*` for the root of each tree. The tree structure is derived from the branching of each node.</dd>
+</dl>
+
+#### Inputs
+
+<dl>
+<dt><tt>X</tt> : T</dt>
+<dd>Input of shape [Batch Size, Number of Features]</dd>
+</dl>
+
+#### Outputs
+
+<dl>
+<dt><tt>Y</tt> : T</dt>
+<dd>Output of shape [Batch Size, Number of targets]</dd>
+</dl>
+
+#### Type Constraints
+
+<dl>
+<dt><tt>T</tt> : tensor(float), tensor(double)</dt>
+<dd>The input type must be a tensor of a numeric type.</dd>
+</dl>
+

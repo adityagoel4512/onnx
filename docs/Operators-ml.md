@@ -27,7 +27,7 @@ For an operator input/output's differentiability, it can be differentiable,
 |<a href="#ai.onnx.ml.SVMRegressor">ai.onnx.ml.SVMRegressor</a>|<a href="Changelog-ml.md#ai.onnx.ml.SVMRegressor-1">1</a>|
 |<a href="#ai.onnx.ml.Scaler">ai.onnx.ml.Scaler</a>|<a href="Changelog-ml.md#ai.onnx.ml.Scaler-1">1</a>|
 |<a href="#ai.onnx.ml.TreeEnsembleClassifier">ai.onnx.ml.TreeEnsembleClassifier</a>|<a href="Changelog-ml.md#ai.onnx.ml.TreeEnsembleClassifier-3">3</a>, <a href="Changelog-ml.md#ai.onnx.ml.TreeEnsembleClassifier-1">1</a>|
-|<a href="#ai.onnx.ml.TreeEnsembleRegressor">ai.onnx.ml.TreeEnsembleRegressor</a>|<a href="Changelog-ml.md#ai.onnx.ml.TreeEnsembleRegressor-3">3</a>, <a href="Changelog-ml.md#ai.onnx.ml.TreeEnsembleRegressor-1">1</a>|
+|<a href="#ai.onnx.ml.TreeEnsembleRegressor">ai.onnx.ml.TreeEnsembleRegressor</a>|<a href="Changelog-ml.md#ai.onnx.ml.TreeEnsembleRegressor-5">5</a>, <a href="Changelog-ml.md#ai.onnx.ml.TreeEnsembleRegressor-3">3</a>, <a href="Changelog-ml.md#ai.onnx.ml.TreeEnsembleRegressor-1">1</a>|
 |<a href="#ai.onnx.ml.ZipMap">ai.onnx.ml.ZipMap</a>|<a href="Changelog-ml.md#ai.onnx.ml.ZipMap-1">1</a>|
 
 
@@ -1013,92 +1013,192 @@ Other versions of this operator: <a href="Changelog-ml.md#ai.onnx.ml.TreeEnsembl
 
 ### <a name="ai.onnx.ml.TreeEnsembleRegressor"></a><a name="ai.onnx.ml.treeensembleregressor">**ai.onnx.ml.TreeEnsembleRegressor**</a>
 
-  Tree Ensemble regressor.  Returns the regressed values for each input in N.<br>
-      All args with nodes_ are fields of a tuple of tree nodes, and
-      it is assumed they are the same length, and an index i will decode the
-      tuple across these inputs.  Each node id can appear only once
-      for each tree id.<br>
-      All fields prefixed with target_ are tuples of votes at the leaves.<br>
-      A leaf may have multiple votes, where each vote is weighted by
-      the associated target_weights index.<br>
-      All fields ending with <i>_as_tensor</i> can be used instead of the
-      same parameter without the suffix if the element type is double and not float.
-      All trees must have their node ids start at 0 and increment by 1.<br>
-      Mode enum is BRANCH_LEQ, BRANCH_LT, BRANCH_GTE, BRANCH_GT, BRANCH_EQ, BRANCH_NEQ, LEAF
+  Tree Ensemble regressor.  Returns the regressed values for each input in a batch.
+      Inputs have dimensions `[N, F]` where `N` is the input batch size and `F` is the number of input features.
+      Outputs have dimensions `[N, num_targets]` where `N` is the batch size and `num_targets` is the number of targets, which is a configurable attribute.
+
+      The encoding of this attribute is split along interior nodes and the leaves of the trees. Notably, attributes with the prefix `nodes_*` are associated with interior nodes, and attributes with the prefix `leaf_*` are associated with leaves.
+      The attributes `nodes_*` must all have the same length and encode a sequence of tuples, as defined by taking all the `nodes_*` fields at a given position.
+
+      All fields prefixed with `leaf_*` represent tree leaves, and similarly define tuples of leaves and must have identical length.
 
 #### Version
 
-This version of the operator has been available since version 3 of the 'ai.onnx.ml' operator set.
+This version of the operator has been available since version 5 of the 'ai.onnx.ml' operator set.
 
-Other versions of this operator: <a href="Changelog-ml.md#ai.onnx.ml.TreeEnsembleRegressor-1">1</a>
+Other versions of this operator: <a href="Changelog-ml.md#ai.onnx.ml.TreeEnsembleRegressor-1">1</a>, <a href="Changelog-ml.md#ai.onnx.ml.TreeEnsembleRegressor-3">3</a>
 
 #### Attributes
 
 <dl>
-<dt><tt>aggregate_function</tt> : string (default is SUM)</dt>
-<dd>Defines how to aggregate leaf values within a target. <br>One of 'AVERAGE,' 'SUM,' 'MIN,' 'MAX.'</dd>
-<dt><tt>base_values</tt> : list of floats</dt>
-<dd>Base values for regression, added to final prediction after applying aggregate_function; the size must be the same as the classes or can be left unassigned (assumed 0)</dd>
-<dt><tt>base_values_as_tensor</tt> : tensor</dt>
-<dd>Base values for regression, added to final prediction after applying aggregate_function; the size must be the same as the classes or can be left unassigned (assumed 0)</dd>
+<dt><tt>aggregate_function</tt> : int (default is 1)</dt>
+<dd>Defines how to aggregate leaf values within a target. <br>One of 'AVERAGE' (0) 'SUM' (1) 'MIN' (2) 'MAX (3) defaults to 'SUM' (1)</dd>
+<dt><tt>leaf_targetids</tt> : list of ints (required)</dt>
+<dd>The index of the target that this leaf contributes to (this must be in range `[0, n_targets)`).</dd>
+<dt><tt>leaf_weights</tt> : tensor (required)</dt>
+<dd>The weight for each target</dd>
+<dt><tt>membership_values</tt> : tensor</dt>
+<dd>Members to test membership of for each set membership node. List all of the members to test again in the order that the 'SET_MEMBER' mode appears in `node_modes`, delimited by `NaN`s. Will have the same number of sets of values as nodes with mode 'SET_MEMBER'. This may be ommitted if the node doesn't contain any 'SET_MEMBER' nodes.</dd>
 <dt><tt>n_targets</tt> : int</dt>
 <dd>The total number of targets.</dd>
-<dt><tt>nodes_falsenodeids</tt> : list of ints</dt>
-<dd>Child node if expression is false</dd>
-<dt><tt>nodes_featureids</tt> : list of ints</dt>
+<dt><tt>nodes_falseleafs</tt> : list of ints (required)</dt>
+<dd>1 if false branch is leaf for each node and 0 if an interior node. To represent a tree that is a leaf (only has one node), one can do so by having a single `nodes_*` entry with true and false branches referencing the same `leaf_*` entry</dd>
+<dt><tt>nodes_falsenodeids</tt> : list of ints (required)</dt>
+<dd>If `nodes_falseleafs` is false at an entry, this represents the position of the false branch node. This position can be used to index into a `nodes_*` entry. If `nodes_falseleafs` is false, it is an index into the leaf_* attributes.</dd>
+<dt><tt>nodes_featureids</tt> : list of ints (required)</dt>
 <dd>Feature id for each node.</dd>
-<dt><tt>nodes_hitrates</tt> : list of floats</dt>
-<dd>Popularity of each node, used for performance and may be omitted.</dd>
-<dt><tt>nodes_hitrates_as_tensor</tt> : tensor</dt>
+<dt><tt>nodes_hitrates</tt> : tensor</dt>
 <dd>Popularity of each node, used for performance and may be omitted.</dd>
 <dt><tt>nodes_missing_value_tracks_true</tt> : list of ints</dt>
-<dd>For each node, define what to do in the presence of a NaN: use the 'true' (if the attribute value is 1) or 'false' (if the attribute value is 0) branch based on the value in this array.<br>This attribute may be left undefined and the default value is false (0) for all nodes.</dd>
-<dt><tt>nodes_modes</tt> : list of strings</dt>
-<dd>The node kind, that is, the comparison to make at the node. There is no comparison to make at a leaf node.<br>One of 'BRANCH_LEQ', 'BRANCH_LT', 'BRANCH_GTE', 'BRANCH_GT', 'BRANCH_EQ', 'BRANCH_NEQ', 'LEAF'</dd>
-<dt><tt>nodes_nodeids</tt> : list of ints</dt>
-<dd>Node id for each node. Node ids must restart at zero for each tree and increase sequentially.</dd>
-<dt><tt>nodes_treeids</tt> : list of ints</dt>
-<dd>Tree id for each node.</dd>
-<dt><tt>nodes_truenodeids</tt> : list of ints</dt>
-<dd>Child node if expression is true</dd>
-<dt><tt>nodes_values</tt> : list of floats</dt>
-<dd>Thresholds to do the splitting on for each node.</dd>
-<dt><tt>nodes_values_as_tensor</tt> : tensor</dt>
-<dd>Thresholds to do the splitting on for each node.</dd>
-<dt><tt>post_transform</tt> : string (default is NONE)</dt>
-<dd>Indicates the transform to apply to the score. <br>One of 'NONE,' 'SOFTMAX,' 'LOGISTIC,' 'SOFTMAX_ZERO,' or 'PROBIT'</dd>
-<dt><tt>target_ids</tt> : list of ints</dt>
-<dd>The index of the target that each weight is for</dd>
-<dt><tt>target_nodeids</tt> : list of ints</dt>
-<dd>The node id of each weight</dd>
-<dt><tt>target_treeids</tt> : list of ints</dt>
-<dd>The id of the tree that each node is in.</dd>
-<dt><tt>target_weights</tt> : list of floats</dt>
-<dd>The weight for each target</dd>
-<dt><tt>target_weights_as_tensor</tt> : tensor</dt>
-<dd>The weight for each target</dd>
+<dd>For each node, define whether to follow the true branch (if attribute value is 1) or false branch (if attribute value is 0) in the presence of a NaN input feature. This attribute may be left undefined and the default value is false (0) for all nodes.</dd>
+<dt><tt>nodes_modes</tt> : list of ints (required)</dt>
+<dd>The comparison operation performed by the node. This is encoded as an enumeration of 0 ('BRANCH_LEQ'), 1 ('BRANCH_LT'), 2 ('BRANCH_GTE'), 3 ('BRANCH_GT'), 4 ('BRANCH_EQ'), 5 ('BRANCH_NEQ'), and 6 ('SET_MEMBER').</dd>
+<dt><tt>nodes_splits</tt> : tensor (required)</dt>
+<dd>Thresholds to do the splitting on for each node with mode that is not 'SET_MEMBER'.</dd>
+<dt><tt>nodes_trueleafs</tt> : list of ints (required)</dt>
+<dd>1 if true branch is leaf for each node and 0 an interior node. To represent a tree that is a leaf (only has one node), one can do so by having a single `nodes_*` entry with true and false branches referencing the same `leaf_*` entry</dd>
+<dt><tt>nodes_truenodeids</tt> : list of ints (required)</dt>
+<dd>If `nodes_trueleafs` is false at an entry, this represents the position of the true branch node. This position can be used to index into a `nodes_*` entry. If `nodes_trueleafs` is false, it is an index into the leaf_* attributes.</dd>
+<dt><tt>post_transform</tt> : int (default is 0)</dt>
+<dd>Indicates the transform to apply to the score. <br>One of 'NONE' (0), 'SOFTMAX' (1), 'LOGISTIC' (2), 'SOFTMAX_ZERO' (3) or 'PROBIT' (4), defaults to 'NONE' (0)</dd>
+<dt><tt>tree_roots</tt> : list of ints (required)</dt>
+<dd>Index into `nodes_*` for the root of each tree. The tree structure is derived from the branching of each node.</dd>
 </dl>
 
 #### Inputs
 
 <dl>
 <dt><tt>X</tt> : T</dt>
-<dd>Input of shape [N,F]</dd>
+<dd>Input of shape [Batch Size, Number of Features]</dd>
 </dl>
 
 #### Outputs
 
 <dl>
-<dt><tt>Y</tt> : tensor(float)</dt>
-<dd>N classes</dd>
+<dt><tt>Y</tt> : T</dt>
+<dd>Output of shape [Batch Size, Number of targets]</dd>
 </dl>
 
 #### Type Constraints
 
 <dl>
-<dt><tt>T</tt> : tensor(float), tensor(double), tensor(int64), tensor(int32)</dt>
+<dt><tt>T</tt> : tensor(float), tensor(double)</dt>
 <dd>The input type must be a tensor of a numeric type.</dd>
 </dl>
+
+
+#### Examples
+
+<details>
+<summary>tree_ensemble_regressor_set_membership</summary>
+
+```python
+node = onnx.helper.make_node(
+    "TreeEnsembleRegressor",
+    ["X"],
+    ["Y"],
+    domain="ai.onnx.ml",
+    n_targets=4,
+    aggregate_function=1,
+    membership_values=make_tensor(
+        "membership_values",
+        onnx.TensorProto.FLOAT,
+        (8,),
+        [1.2, 3.7, 8, 9, np.nan, 12, 7, np.nan],
+    ),
+    nodes_missing_value_tracks_true=None,
+    nodes_hitrates=None,
+    post_transform=0,
+    tree_roots=[0],
+    nodes_modes=[0, 6, 6],
+    nodes_featureids=[0, 0, 0],
+    nodes_splits=make_tensor(
+        "nodes_splits",
+        onnx.TensorProto.FLOAT,
+        (3,),
+        np.array([11, 232344.0, np.nan], dtype=np.float32),
+    ),
+    nodes_trueleafs=[0, 1, 1],
+    nodes_truenodeids=[1, 0, 1],
+    nodes_falseleafs=[1, 0, 1],
+    nodes_falsenodeids=[2, 2, 3],
+    leaf_targetids=[0, 1, 2, 3],
+    leaf_weights=make_tensor(
+        "leaf_weights", onnx.TensorProto.FLOAT, (4,), [1, 10, 1000, 100]
+    ),
+)
+
+x = np.array([1.2, 3.4, -0.12, np.nan, 12, 7], np.float32).reshape(-1, 1)
+expected = np.array(
+    [
+        [1, 0, 0, 0],
+        [0, 0, 0, 100],
+        [0, 0, 0, 100],
+        [0, 0, 1000, 0],
+        [0, 0, 1000, 0],
+        [0, 10, 0, 0],
+    ],
+    dtype=np.float32,
+)
+expect(
+    node,
+    inputs=[x],
+    outputs=[expected],
+    name="test_ai_onnx_ml_tree_ensemble_regressor_set_membership",
+)
+```
+
+</details>
+
+
+<details>
+<summary>tree_ensemble_regressor_single_tree</summary>
+
+```python
+node = onnx.helper.make_node(
+    "TreeEnsembleRegressor",
+    ["X"],
+    ["Y"],
+    domain="ai.onnx.ml",
+    n_targets=2,
+    membership_values=None,
+    nodes_missing_value_tracks_true=None,
+    nodes_hitrates=None,
+    aggregate_function=1,
+    post_transform=0,
+    tree_roots=[0],
+    nodes_modes=[0, 0, 0],
+    nodes_featureids=[0, 0, 0],
+    nodes_splits=make_tensor(
+        "nodes_splits",
+        onnx.TensorProto.DOUBLE,
+        (3,),
+        np.array([3.14, 1.2, 4.2], dtype=np.float64),
+    ),
+    nodes_truenodeids=[1, 0, 1],
+    nodes_trueleafs=[0, 1, 1],
+    nodes_falsenodeids=[2, 2, 3],
+    nodes_falseleafs=[0, 1, 1],
+    leaf_targetids=[0, 1, 0, 1],
+    leaf_weights=make_tensor(
+        "leaf_weights",
+        onnx.TensorProto.DOUBLE,
+        (4,),
+        np.array([5.23, 12.12, -12.23, 7.21], dtype=np.float64),
+    ),
+)
+
+x = np.array([1.2, 3.4, -0.12, 1.66, 4.14, 1.77], np.float64).reshape(3, 2)
+y = np.array([[5.23, 0], [5.23, 0], [0, 12.12]], dtype=np.float64)
+expect(
+    node,
+    inputs=[x],
+    outputs=[y],
+    name="test_ai_onnx_ml_tree_ensemble_regressor_single_tree",
+)
+```
+
+</details>
 
 
 ### <a name="ai.onnx.ml.ZipMap"></a><a name="ai.onnx.ml.zipmap">**ai.onnx.ml.ZipMap**</a>

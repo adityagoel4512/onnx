@@ -28,7 +28,10 @@ from onnx.reference.ops.aionnxml.op_svm_regressor import SVMRegressor
 from onnx.reference.ops.aionnxml.op_tree_ensemble_classifier import (
     TreeEnsembleClassifier,
 )
-from onnx.reference.ops.aionnxml.op_tree_ensemble_regressor import TreeEnsembleRegressor
+from onnx.reference.ops.aionnxml.op_tree_ensemble_regressor import (
+    TreeEnsembleRegressor_3,
+    TreeEnsembleRegressor_5,
+)
 
 
 def _build_registered_operators() -> Dict[str, Dict[Union[int, None], OpRunAiOnnxMl]]:
