@@ -957,51 +957,64 @@ class TestReferenceEvaluatorAiOnnxMl(unittest.TestCase):
         assert_allclose(expected_result, actual, atol=1e-6)
 
     @parameterized.expand(
-        [
-            (
-                [
-                    "BRANCH_LEQ",
-                    "BRANCH_GT",
-                    "BRANCH_LT",
-                    "BRANCH_GTE",
-                    "BRANCH_EQ",
-                    "BRANCH_NEQ",
-                ],
-                "SUM",
-                _get_test_tree_ensemble_regressor_opset4,
-            ),
-            (
-                [Mode.LEQ, Mode.GT, Mode.LT, Mode.GTE, Mode.EQ, Mode.NEQ],
-                AggregationFunction.SUM,
-                _get_test_tree_ensemble_regressor_opset5,
-            ),
-        ]
-    )
-    @unittest.skipIf(not ONNX_ML, reason="onnx not compiled with ai.onnx.ml")
-    def test_tree_ensemble_regressor_rule(
-        self, rules, aggregate_function, model_factory
-    ):
-        x = np.arange(9).reshape((-1, 3)).astype(np.float32) / 10 - 0.5
-        expected_agg = dict(
-            zip(
-                rules,
-                [
-                    np.array([[0.576923], [0.576923], [0.576923]], dtype=np.float32),
-                    np.array([[0.5], [0.5], [0.5]], dtype=np.float32),
-                    np.array([[0.576923], [0.576923], [0.576923]], dtype=np.float32),
-                    np.array([[0.5], [0.5], [0.5]], dtype=np.float32),
-                    np.array([[1.0], [1.0], [1.0]], dtype=np.float32),
-                    np.array([[0.076923], [0.076923], [0.076923]], dtype=np.float32),
-                ],
+        tuple(
+            itertools.chain.from_iterable(
+                (
+                    (
+                        Mode.LEQ if opset5 else "BRANCH_LEQ",
+                        np.array(
+                            [[0.576923], [0.576923], [0.576923]], dtype=np.float32
+                        ),
+                        opset5,
+                    ),
+                    (
+                        Mode.GT if opset5 else "BRANCH_GT",
+                        np.array([[0.5], [0.5], [0.5]], dtype=np.float32),
+                        opset5,
+                    ),
+                    (
+                        Mode.LT if opset5 else "BRANCH_LT",
+                        np.array(
+                            [[0.576923], [0.576923], [0.576923]], dtype=np.float32
+                        ),
+                        opset5,
+                    ),
+                    (
+                        Mode.GTE if opset5 else "BRANCH_GTE",
+                        np.array([[0.5], [0.5], [0.5]], dtype=np.float32),
+                        opset5,
+                    ),
+                    (
+                        Mode.EQ if opset5 else "BRANCH_EQ",
+                        np.array([[1.0], [1.0], [1.0]], dtype=np.float32),
+                        opset5,
+                    ),
+                    (
+                        Mode.NEQ if opset5 else "BRANCH_NEQ",
+                        np.array(
+                            [[0.076923], [0.076923], [0.076923]], dtype=np.float32
+                        ),
+                        opset5,
+                    ),
+                )
+                for opset5 in [True, False]
             )
         )
+    )
+    @unittest.skipIf(not ONNX_ML, reason="onnx not compiled with ai.onnx.ml")
+    def test_tree_ensemble_regressor_rule(self, rule, expected, opset5):
+        x = np.arange(9).reshape((-1, 3)).astype(np.float32) / 10 - 0.5
+        model_factory = (
+            self._get_test_tree_ensemble_regressor_opset5
+            if opset5
+            else self._get_test_tree_ensemble_regressor_opset4
+        )
+        aggregate_function = AggregationFunction.SUM if opset5 else "SUM"
 
-        for rule, expected in expected_agg.items():
-            with self.subTest(rule=rule):
-                model_proto = model_factory(aggregate_function, rule)
-                sess = ReferenceEvaluator(model_proto)
-                (actual,) = sess.run(None, {"X": x})
-                assert_allclose(expected, actual, atol=1e-6)
+        model_proto = model_factory(aggregate_function, rule)
+        sess = ReferenceEvaluator(model_proto)
+        (actual,) = sess.run(None, {"X": x})
+        assert_allclose(expected, actual, atol=1e-6)
 
     @unittest.skipIf(not ONNX_ML, reason="onnx not compiled with ai.onnx.ml")
     def test_tree_ensemble_regressor_2_targets_opset4(self):
