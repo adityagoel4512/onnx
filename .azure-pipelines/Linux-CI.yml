@@ -1,12 +1,4 @@
-schedules:
-- cron: '0 0 * * *'
-  displayName: Nightly Linux CI in main branch
-  branches:
-    include:
-    - main
-
-trigger:
-- gh-readonly-queue/**
+on: [push]
 
 jobs:
 - job: 'Test'
